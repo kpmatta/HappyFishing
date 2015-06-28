@@ -874,7 +874,7 @@ function level:createSpear()
 
 					local params = 
 					{ 
-						msg = "Level "..self.nCurrentLevel.. " Completed Goto Next Level",
+						msg = "Level "..self.nCurrentLevel.. " Completed go to Next Level",
 						restartBtn = 0,
 						resumeBtn = 0,
 						homeBtn = 1,
