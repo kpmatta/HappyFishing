@@ -18,5 +18,14 @@ settings =
 			            },
     			}
 
-    }
+    },
+
+    plugins =
+    {
+        ["plugin.google.play.services"] =
+        {
+            publisherId = "com.coronalabs",
+            supportedPlatforms = { iphone=true, android=true }
+        },
+    },      
 }

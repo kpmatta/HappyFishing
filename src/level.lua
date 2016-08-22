@@ -14,6 +14,10 @@
 		by composer scenes  
 		
 ============================================================================]]
+local ads = require( "ads" );
+local bannerAppID = "ca-app-pub-9375609238462354/3341307827";
+local adProvider = "admob";
+local appID = "happyAdd"
 
 local widget = require( "widget" );
 local composer = require( "composer");
@@ -60,27 +64,32 @@ audioTable[3] = audio.loadStream( "water_flow.mp3" );
 audioTable[4] = audio.loadSound( "Bubbles.mp3" );
 audioTable[5] = audio.loadSound( "Grenade.mp3" );
 audioTable[6] = audio.loadSound( "Water Splash.mp3" );
+audioTable[7] = audio.loadSound( "Gun_Silencer.mp3" );
+audioTable[8] = audio.loadSound( "ArcticNight.mp3" );
+audioTable[9] = audio.loadSound( "HeShallFeed.mp3" );
+audioTable[10] = audio.loadSound( "Gurlitte-Novelette.mp3" );
+
 
 -- initialize the data for sprite images
 -- when the image loaded, image will be attached with these attributes
 -- this table should match the fishTable.lua
 local spriteImgData = 
 {
-    {score = 1000, tag = "fish", audio = 1 },        -- light orange
-    {score = 1500, tag = "fish", audio = 1 },        -- yellow, blue fish
-    {score = 2000, tag = "fish", audio = 1 },        -- orange stripe fish
-    {score = 1000, tag = "fish", audio = 1 },        -- black fish
-    {score = 4000, tag = "fish", audio = 1 },        -- diamond blue fish
-    {score = 100, tag = "fish", audio = 1 },         -- crab
-    {score = 2000, tag = "fish", audio = 1 },        -- green fish
-    {score = 500, tag = "fish", audio = 1 },        -- light orange baloon fish
-    {score = 2000, tag = "fish", audio = 1 },        -- very small orange fish
-    {score = 1200, tag = "fish", audio = 1 },        -- scarlet, gray cartoon fish
-    {score = 1500, tag = "fish", audio = 1 },        -- very small green fish
-    {score = 500, tag = "fish", audio = 1 },        -- cyan baloon fish
-    {score = 2000, tag = "fish", audio = 1 },         -- small rainbow fish
-    {score = 750, tag = "fish", audio = 1 },         -- seahorse
-    {score = 1000, tag = "fish", audio = 1 },        -- yellow stripes fish
+    {score = 1000, tag = "fish", audio = 7 },        -- light orange
+    {score = 1500, tag = "fish", audio = 7 },        -- yellow, blue fish
+    {score = 2000, tag = "fish", audio = 7 },        -- orange stripe fish
+    {score = 1000, tag = "fish", audio = 7 },        -- black fish
+    {score = 4000, tag = "fish", audio = 7 },        -- diamond blue fish
+    {score = 100, tag = "fish", audio = 7 },         -- crab
+    {score = 2000, tag = "fish", audio = 7 },        -- green fish
+    {score = 500, tag = "fish", audio = 7 },        -- light orange baloon fish
+    {score = 2000, tag = "fish", audio = 7 },        -- very small orange fish
+    {score = 1200, tag = "fish", audio = 7 },        -- scarlet, gray cartoon fish
+    {score = 1500, tag = "fish", audio = 7 },        -- very small green fish
+    {score = 500, tag = "fish", audio = 7 },        -- cyan baloon fish
+    {score = 2000, tag = "fish", audio = 7 },         -- small rainbow fish
+    {score = 750, tag = "fish", audio = 7 },         -- seahorse
+    {score = 1000, tag = "fish", audio = 7 },        -- yellow stripes fish
     {score = -500, tag = "shark", audio = 2 },        -- shark
     {score = 0, tag = "submarine", audio = 2},        -- submarine
     {score = -1000, tag = "bomb", audio = 5},         -- bomb
@@ -102,6 +111,27 @@ local level = { nScore = 0,
 				timer3 = nil,
 				event,
 				params };
+
+local function addListener( event )
+   -- The 'event' table includes:
+    -- event.name: string value of "adsRequest"
+    -- event.response: message from the ad provider about the status of this request
+    -- event.phase: string value of "loaded", "shown", or "refresh"
+    -- event.type: string value of "banner" or "interstitial"
+    -- event.isError: boolean true or false
+ 
+   -- local msg = event.response
+    -- Quick debug message regarding the response from the library
+    --print( "Message from the ads library: ", msg )
+ 
+    --if ( event.isError ) then
+    --    print( "Error, no ad received", msg )
+    --else
+    --    print( "Ah ha! Got one!" )
+   -- end
+end
+
+ads.init(adProvider, appID, addListener);
 
 -------------------------------------------------------------------------------
 -- Distance between two points
@@ -210,7 +240,7 @@ function level:createScore()
 
 	
 	local txtHeight = 45;
-	local baseWidth = 350;
+	local baseWidth = 250;
 	local baseHeight = txtHeight + 15;
 	local xOffset = 10;
 	local yOffset = scrHeight - 15;
@@ -227,11 +257,38 @@ function level:createScore()
 	self.sceneGroup:insert(self.txtLevel);
 	self.txtLevel:setEmbossColor( color )
 
-	----------------------------------------------------------------------------
+	-- Score required box
+	---------------------------------------------------------------------------
 	-- create outer rectangle for score
-	--xOffset = xOffset --+ (baseHeight/1.5) + 10;
-	xOffset = baseWidth/2;
-	yOffset = baseHeight;
+	yOffset = yOffset - txtHeight - 50;
+	self.outerRectReq = display.newRoundedRect( xOffset, yOffset, baseWidth, baseHeight, 15 );
+	self.outerRectReq.strokeWidth = 10;
+	self.outerRectReq:setStrokeColor( 0.5, 0.5, 0 );
+	self.outerRectReq:setFillColor( 0, 0, 0, 0 );
+	self.outerRectReq.anchorX = 0;
+	self.outerRectReq.anchorY = 0.5;
+   	self.sceneGroup:insert(self.outerRectReq);
+
+   	-- set inner as nil for tracking
+   	self.innerRect = nil;
+
+	-- Score required text
+	self.txtScoreReq = display.newEmbossedText( ""..self.nTargetScore,
+							xOffset + (baseWidth/2), yOffset, 
+							native.systemFont, txtHeight );
+
+	-- anchor to bottom left
+	self.txtScoreReq.anchorX = 0.5;
+	self.txtScoreReq.anchorY = 0.5;
+	self.txtScoreReq:setFillColor( 0, 0, 0 );
+	self.txtScoreReq:setEmbossColor(colorEmbossed);
+	self.sceneGroup:insert(self.txtScoreReq);
+	self.txtScoreReq:setEmbossColor( color );
+
+	-- Current score box
+	---------------------------------------------------------------------------
+	-- create outer rectangle for score
+	yOffset = yOffset - txtHeight - 20;
 	self.outerRect = display.newRoundedRect( xOffset, yOffset, baseWidth, baseHeight, 15 );
 	self.outerRect.strokeWidth = 10;
 	self.outerRect:setStrokeColor( 0.5, 0.5, 0 );
@@ -244,7 +301,7 @@ function level:createScore()
    	self.innerRect = nil;
 
 	-- current score
-	self.txtScore = display.newEmbossedText( ""..self.nScore.." / "..self.nTargetScore,
+	self.txtScore = display.newEmbossedText( ""..self.nScore,
 							xOffset + (baseWidth/2), yOffset, 
 							native.systemFont, txtHeight );
 
@@ -258,12 +315,12 @@ function level:createScore()
 	
 	----------------------------------------------------------------------------
     -- create circle spear count
-    xOffset = xOffset + baseWidth + 10 + (baseHeight/1.5);
-	self.circleSpearCnt = display.newCircle( xOffset, yOffset, baseHeight/1.5 )
-	self.circleSpearCnt.strokeWidth = 5;
-	self.circleSpearCnt:setStrokeColor( 1, 0.8, 0.2 );
-	self.circleSpearCnt:setFillColor( 0, 0.5, 0 );
-	self.sceneGroup:insert(self.circleSpearCnt);
+    --xOffset = xOffset + baseWidth + 10 + (baseHeight/1.5);
+	--self.circleSpearCnt = display.newCircle( xOffset, yOffset, baseHeight/1.5 )
+	--self.circleSpearCnt.strokeWidth = 5;
+	--self.circleSpearCnt:setStrokeColor( 1, 0.8, 0.2 );
+	--self.circleSpearCnt:setFillColor( 0, 0.5, 0 );
+	--self.sceneGroup:insert(self.circleSpearCnt);
 
 	-- display transparent score under the spear.
 	self.txtInvSpearCnt = display.newText( ""..self.nSpearsCnt, self.nSpearX, self.nSpearY, native.systemFont, 150 );
@@ -271,15 +328,15 @@ function level:createScore()
 	self.txtInvSpearCnt:setFillColor( 0, 0, 1, 0.2 );
 
 	-- spear count left
-	self.txtSpearCnt = display.newEmbossedText( ""..self.nSpearsCnt, 
-						xOffset, yOffset, 
-						native.systemFontBold, txtHeight );
+	--self.txtSpearCnt = display.newEmbossedText( ""..self.nSpearsCnt, 
+	--					xOffset, yOffset, 
+	--					native.systemFontBold, txtHeight );
 
 	-- anchor to top right
-	self.txtSpearCnt:setFillColor( 0, 0, 0 );
-	self.txtSpearCnt:setEmbossColor(colorEmbossed);
-	self.sceneGroup:insert(self.txtSpearCnt);	
-	self.txtSpearCnt:setEmbossColor( color )
+	--self.txtSpearCnt:setFillColor( 0, 0, 0 );
+	--self.txtSpearCnt:setEmbossColor(colorEmbossed);
+	--self.sceneGroup:insert(self.txtSpearCnt);	
+	--self.txtSpearCnt:setEmbossColor( color )
 	---------------------------------------------------------------------------------------------
 
 end
@@ -294,14 +351,9 @@ function level:updateScore()
 		self.txtLevel.text = "Level: ".. self.nCurrentLevel;
 	end
 
-	-- update spear count
-	if ( self.txtSpearCnt ~= nil ) then 
-		self.txtSpearCnt.text = ""..self.nSpearsCnt;
-	end
-
 	-- update score
 	if ( self.txtScore ~= nil ) then
-		self.txtScore.text = ""..self.nScore.." / "..self.nTargetScore;
+		self.txtScore.text = ""..self.nScore;
 	end
 
 	-- update spears left score
@@ -330,7 +382,7 @@ function level:updateScore()
 				
 				-- create progress rect
 				self.innerRect = display.newRoundedRect(self.outerRect.x, self.outerRect.y,
-												 innerWid, self.outerRect.height, 15 );
+												 innerWid, self.outerRect.height-5, 15 );
 
 				self.innerRect:setFillColor(1, 1, 0, 0.7) ;
 				self.innerRect.anchorX = 0;
@@ -523,7 +575,8 @@ function level:resumeGame()
 	self.pauseBtn.isVisible = true;
 
 	-- play water flow sound
-	self.waterFlowChannel = audio.play( audioTable[6], {loops = -1} );
+	local i = math.random(8,10)
+	self.waterFlowChannel = audio.play( audioTable[i], {loops = -1} );
 
 end
 
@@ -580,7 +633,6 @@ function level:nextLevel()
 	
 	-- increment the spear count and score for the next level
 	self.params.nSpearsCnt = self._nSpearsCnt + 3;
-	--self._nSpearsCnt = self.nSpearsCnt;
 
 	self.params.nTargetScore = self.nTargetScore + 5000;
 	self.params.nCurrentLevel = self.nCurrentLevel + 1;
@@ -842,17 +894,16 @@ function level:createSpear()
 
 			end
 
-			-- create next spear
-			if ( self.nSpearsCnt > 0 ) then
-				level:createSpear();
-
 			-- all spears completed and reached the target score
-			elseif ( self.nScore >= self.nTargetScore ) then
+			if ( self.nScore >= self.nTargetScore) then
 
 				timer.cancel( self.timer1 );
 				timer.cancel( self.timer2 );
 				timer.cancel( self.timer3 );
 				transition.cancel();
+
+				-- play applause sound
+				audio.play( audioTable[1] );
 
 				-- if all levels completed, show overlay with appropriate buttons
 				if ( self.nCurrentLevel == self.nTotalLevels ) then
@@ -904,7 +955,11 @@ function level:createSpear()
 
 				level:showeOverlay ( params );
 
+			-- Still have spears to shoot
+			elseif ( self.nSpearsCnt > 0 ) then
+				level:createSpear();
 			end
+
 		end
 	end
 
@@ -986,12 +1041,14 @@ end
 function level:showLevel( )
 
 	-- generate random fishes and swims
-	self.timer1 = timer.performWithDelay(math.random(2000, 3000), function() level:swim(100, 150) end , 0);
-	self.timer2 = timer.performWithDelay(math.random(2000, 3000), function() level:swim(100, 400) end , 0);
-	self.timer3 = timer.performWithDelay(math.random(2000, 3000), function() level:swim(100, 600) end , 0);
+	self.timer1 = timer.performWithDelay(math.random(2000, 3000), function() level:swim(100, 200) end , 0);
+	self.timer2 = timer.performWithDelay(math.random(2000, 3000), function() level:swim(100, 450) end , 0);
+	self.timer3 = timer.performWithDelay(math.random(2000, 3000), function() level:swim(100, 650) end , 0);
 
-	self.waterFlowChannel = audio.play( audioTable[6], {loops = -1} );
+	local i = math.random(8,10)
+	self.waterFlowChannel = audio.play( audioTable[i], {loops = -1} );
 
+	ads.show( "banner", {x=0, y=0, appId=bannerAppID});
 	
 end
 
